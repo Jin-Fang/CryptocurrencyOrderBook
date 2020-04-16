@@ -1,12 +1,11 @@
 from bintrees.rbtree import RBTree
-import pandas as pd
 import math
 
-class OrderBook:
 
+class OrderBook:
     def __init__(self):
         """
-
+        Instantiate OrderBook object which uses RBTree as main data structure
         """
         self.bids = RBTree()
         self.asks = RBTree()
@@ -18,22 +17,31 @@ class OrderBook:
 
     def __repr__(self):
         """
+        Return a string representation of OrderBook object
 
-        :return:
+        :return: a string describing OrderBook object
+        :rtype: str
         """
-        return "Bids Representation: \n" \
-               "{}\n" \
-               "Asks Representation: \n" \
-               "{}\n" \
-               "Current best bid price is {}\n" \
-               "Current best ask price is {}\n" \
-               "Current bid-ask spread is {}".format(str(self.bids), str(self.asks), str(self.bid_max), str(self.ask_min), str(self.get_spread()))
+        return (
+            "Bids Representation: \n"
+            "{}\n"
+            "Asks Representation: \n"
+            "{}\n"
+            "Current best bid price is {}\n"
+            "Current best ask price is {}\n"
+            "Current bid-ask spread is {}".format(
+                str(self.bids), str(self.asks), str(self.bid_max), str(self.ask_min), str(self.get_spread())
+            )
+        )
 
     def __eq__(self, other):
         """
+        Return True iff self and other have exactly the same bids and asks attributes
 
-        :param other:
-        :return:
+        :param other: Any object used for comparison
+        :type other: Any
+        :return: whether self and other are the same
+        :rtype: bool
         """
         if not type(self) == type(other):
             return False
@@ -41,39 +49,51 @@ class OrderBook:
 
     def get_spread(self):
         """
+        Calculate the spread from best bid and ask
 
-        :return:
+        :return: current spread on OrderBook
+        :rtype: float
         """
         return self.ask_min - self.bid_max
 
     def get_midpoint(self):
         """
+        Calculate mid point price from best bid and ask
 
-        :return:
+        :return: current mid point price
+        :rtype: float
         """
-        return (self.ask_min + self.bid_max)/2
+        return (self.ask_min + self.bid_max) / 2
 
     def get_liquidity(self):
         """
+        Calculate the liquidity for both bid and ask side. Total volume of liquidity quoted on bids and asks within 2x
+        the spread from the best bid and the best ask, in units of the base currency.
 
-        :return:
+        :return: current bid and ask liquidity
+        :rtype: float, float
         """
         spread = self.get_spread()
-        lower_bound_bid = self.bid_max - 2*spread
-        upper_bound_ask = self.ask_min + 2*spread
+        lower_bound_bid = self.bid_max - 2 * spread
+        upper_bound_ask = self.ask_min + 2 * spread
         # get orders in the liquidity range using TreeSlice
-        liquidity_bids_tree = self.bids[lower_bound_bid:self.bid_max+1]
-        liquidity_asks_tree = self.asks[self.ask_min:upper_bound_ask]
+        liquidity_bids_tree = self.bids[lower_bound_bid : self.bid_max + 1]
+        liquidity_asks_tree = self.asks[self.ask_min : upper_bound_ask]
         bid_liquidity = sum(liquidity_bids_tree.values())
         ask_liquidity = sum(liquidity_asks_tree.values())
         return bid_liquidity, ask_liquidity
 
     def update_order(self, price, amount):
         """
+        Update OrderBook by inserting a new price as key and amount as value to RBTree. If a price (key) already exists,
+        update its corresponding amount (value) to new amount.
 
-        :param price:
-        :param amount:
-        :return:
+        :param price: price of a limit order
+        :type price: float
+        :param amount: amount of the limit order
+        :type amount: float
+        :return: None
+        :rtype: NoneType
         """
         # bid order
         if amount > 0:
@@ -109,45 +129,18 @@ class OrderBook:
                 elif price == self.ask_min:
                     self.ask_min = self.asks.min_key()
 
-if __name__ == "__main__":
-    # read book file
-    book_data = pd.read_csv("/Users/ramborghini/Desktop/midpoint/book.csv")
 
-    btc_usd_orderbook = OrderBook()
-    for pair, price, amount in zip(book_data["pair"], book_data["price"], book_data["amount"]):
-        if pair == "BTC-USD":
-             btc_usd_orderbook.update_order(price, amount)
-
-    print(btc_usd_orderbook)
-    print(btc_usd_orderbook.get_liquidity())
-
-    # # instantiate OrderBook objects for four pairs
-    # btc_usd_orderbook = OrderBook()
-    # btc_eur_orderbook = OrderBook()
-    # bch_usd_orderbook = OrderBook()
-    # bch_eur_orderbook = OrderBook()
-    # bch_btc_orderbook = OrderBook()
-    #
-    # # loop over book data to construct order books
-    # for pair, price, amount in zip(book_data["pair"], book_data["price"], book_data["amount"]):
-    #     if pair == "BTC-USD":
-    #         btc_usd_orderbook.update_order(price, amount)
-    #     elif pair == "BTC-EUR":
-    #         btc_eur_orderbook.update_order(price, amount)
-    #     elif pair == "BCH-USD":
-    #         bch_usd_orderbook.update_order(price, amount)
-    #     elif pair == "BCH-EUR":
-    #         bch_eur_orderbook.update_order(price, amount)
-    #     elif pair == "BCH-BTC":
-    #         bch_btc_orderbook.update_order(price, amount)
-    #
-    # print("Order book for BTC-USD\n"
-    #       "{}\n\n"
-    #       "Order book for BTC-EUR\n"
-    #       "{}\n\n"
-    #       "Order book for BCH-USD\n"
-    #       "{}\n\n"
-    #       "Order book for BCH-EUR\n"
-    #       "{}\n\n"
-    #       "Order book for BCH-BTC\n"
-    #       "{}".format(str(btc_usd_orderbook), str(btc_eur_orderbook), str(bch_usd_orderbook), str(bch_eur_orderbook), str(bch_btc_orderbook)))
+# code for testing the functionality of OrderBook
+# if __name__ == "__main__":
+#     book_data = pd.read_csv("/Users/ramborghini/Desktop/midpoint/book.csv")
+#
+#     btc_usd_orderbook = OrderBook()
+#
+#     for pair, price, amount in zip(book_data["pair"], book_data["price"], book_data["amount"]):
+#         if pair == "BTC-USD":
+#              btc_usd_orderbook.update_order(price, amount)
+#
+#     print(btc_usd_orderbook)
+#     print(btc_usd_orderbook.get_midpoint())
+#     print(btc_usd_orderbook.get_spread())
+#     print(btc_usd_orderbook.get_liquidity())
