@@ -25,16 +25,16 @@ def find_arbitrage(arb_opp, servert, btc_usd, btc_eur, bch_usd, bch_eur, bch_btc
     # triangular arbitrage
     # ["servert", "return", "BTC-USD", "BTC-EUR", "BCH-USD", "BCH-EUR", "BCH-BTC"]
     # case 1: USD -> BTC -> BCH -> USD
-    r1 = round((1 / btc_usd.ask_min) / bch_btc.ask_min * bch_usd.bid_max, 5)
-    if r1 > 1 and r1 < 5:
+    r1 = round((1 / btc_usd.ask_min) / bch_btc.ask_min * bch_usd.bid_max - 1, 5)
+    if r1 > 0 and r1 < 2:
         opp1 = pd.Series([servert, r1, 1, 1, 0, -1, 0, 1], index=arb_opp.columns)
         if not opp_exists(arb_opp, 1, r1):
             arb_opp = arb_opp.append(opp1, ignore_index=True)
             print("case 1: \n{}".format(opp1))
 
     # case 2: USD -> BCH -> BTC -> USD
-    r2 = round((1 / bch_usd.ask_min) * bch_btc.bid_max * btc_usd.bid_max, 5)
-    if r2 > 1 and r2 < 5:
+    r2 = round((1 / bch_usd.ask_min) * bch_btc.bid_max * btc_usd.bid_max - 1, 5)
+    if r2 > 0 and r2 < 2:
         opp2 = pd.Series([servert, r2, 2, -1, 0, 1, 0, -1], index=arb_opp.columns)
         # check if updated
         if not opp_exists(arb_opp, 2, r2):
@@ -42,16 +42,16 @@ def find_arbitrage(arb_opp, servert, btc_usd, btc_eur, bch_usd, bch_eur, bch_btc
             print("case 2: \n{}".format(opp2))
 
     # case 3: EUR -> BTC -> BCH -> EUR
-    r3 = round((1 / btc_eur.ask_min) / bch_btc.ask_min * bch_eur.bid_max, 5)
-    if r3 > 1 and r3 < 5:
+    r3 = round((1 / btc_eur.ask_min) / bch_btc.ask_min * bch_eur.bid_max - 1, 5)
+    if r3 > 0 and r3 < 2:
         opp3 = pd.Series([servert, r3, 3, 0, 1, 0, -1, 1], index=arb_opp.columns)
         if not opp_exists(arb_opp, 3, r3):
             arb_opp = arb_opp.append(opp3, ignore_index=True)
             print("case 3: \n{}".format(opp3))
 
     # case 4: EUR -> BCH -> BTC -> EUR
-    r4 = round((1 / bch_eur.ask_min) * bch_btc.bid_max * btc_eur.bid_max, 5)
-    if r4 > 1 and r4 < 5:
+    r4 = round((1 / bch_eur.ask_min) * bch_btc.bid_max * btc_eur.bid_max - 1, 5)
+    if r4 > 0 and r4 < 2:
         opp4 = pd.Series([servert, r4, 4, 0, -1, 0, 1, -1], index=arb_opp.columns)
         if not opp_exists(arb_opp, 4, r4):
             arb_opp = arb_opp.append(opp4, ignore_index=True)
@@ -59,16 +59,16 @@ def find_arbitrage(arb_opp, servert, btc_usd, btc_eur, bch_usd, bch_eur, bch_btc
 
     # rectangular arbitrage
     # case 5: USD -> BTC -> EUR -> BCH -> USD
-    r5 = round((1 / btc_usd.ask_min) * btc_eur.bid_max / bch_eur.ask_min * bch_usd.bid_max, 5)
-    if r5 > 1 and r5 < 5:
+    r5 = round((1 / btc_usd.ask_min) * btc_eur.bid_max / bch_eur.ask_min * bch_usd.bid_max - 1, 5)
+    if r5 > 0 and r5 < 2:
         opp5 = pd.Series([servert, r5, 5, 1, -1, -1, 1, 0], index=arb_opp.columns)
         if not opp_exists(arb_opp, 5, r5):
             arb_opp = arb_opp.append(opp5, ignore_index=True)
             print("case 5: \n{}".format(opp5))
 
     # case 6: USD -> BCH -> EUR -> BTC -> USD
-    r6 = round((1 / bch_usd.ask_min) * bch_eur.bid_max / btc_eur.ask_min * btc_usd.bid_max, 5)
-    if r6 > 1 and r6 < 5:
+    r6 = round((1 / bch_usd.ask_min) * bch_eur.bid_max / btc_eur.ask_min * btc_usd.bid_max - 1, 5)
+    if r6 > 0 and r6 < 2:
         opp6 = pd.Series([servert, r6, 6, -1, 1, 1, -1, 0], index=arb_opp.columns)
         if not opp_exists(arb_opp, 6, r6):
             arb_opp = arb_opp.append(opp6, ignore_index=True)
@@ -90,9 +90,9 @@ def opp_exists(arb_opp, case_num, r):
     :return: True iff there exists an identical arbitrage opportunity in the last 8 entries of existing opportunities
     :rtype: bool
     """
-    # slice last 10 rows from agg_data
-    if len(arb_opp) > 7:
-        temp = arb_opp[len(arb_opp) - 7 : len(arb_opp)]
+    # slice last 8 rows from agg_data
+    if len(arb_opp) > 8:
+        temp = arb_opp[len(arb_opp) - 8 : len(arb_opp)]
     else:
         temp = arb_opp
     if len(temp.loc[(temp["case"] == case_num) & (temp["return"] == r)]) > 0:
@@ -131,4 +131,4 @@ if __name__ == "__main__":
         # check arbitrage opportunity
         arb_opp = find_arbitrage(arb_opp, servert, btc_usd, btc_eur, bch_usd, bch_eur, bch_btc)
 
-    arb_opp.to_csv("arbitrage_opportunities.csv", index=False)
+    arb_opp.to_csv("./data_output/arbitrage_opportunities.csv", index=False)

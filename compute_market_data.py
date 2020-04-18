@@ -188,4 +188,4 @@ if __name__ == "__main__":
         agg_data = retrieve_order_data(book_data, pair, agg_temp)
         agg_result = fill_vol(agg_data)
         # store data as csv for later use
-        agg_result.to_csv(pair + ".csv", index=False)
+        agg_result.to_csv("./data_output/ "+ pair + ".csv", index=False)
